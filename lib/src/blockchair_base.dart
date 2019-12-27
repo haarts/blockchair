@@ -17,6 +17,7 @@ class Blockchair extends BaseClient {
 
   Future<Map<String, dynamic>> stats() async {
     var response = await _client.get('$_url$_statsPath');
+    print(json.decode(response.body).runtimeType);
 
     return json.decode(response.body);
   }

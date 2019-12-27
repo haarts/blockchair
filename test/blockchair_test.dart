@@ -1,5 +1,10 @@
-import 'package:blockchair/blockchair.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart';
+import 'package:http/testing.dart';
 import 'package:test/test.dart';
+
+import 'package:blockchair/blockchair.dart';
 
 class ContainsKey extends Matcher {
   final Object _key;
@@ -23,8 +28,11 @@ void main() {
   });
 
   test('stats()', () async {
+    var client = MockClient(
+        (response) async => Response(json.encode({"data": 123}), 200));
     expect(
-      await Blockchair('https://api.blockchair.com/bitcoin').stats(),
+      await Blockchair('https://api.blockchair.com/bitcoin', client: client)
+          .stats(),
       ContainsKey('data'),
     );
   });
