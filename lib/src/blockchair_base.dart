@@ -1,15 +1,25 @@
-// import 'dart:io';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart';
 
 class Blockchair extends BaseClient {
-  Blockchair(String url, this._apiKey)
+  static const String _statsPath = '/stats';
+
+  Blockchair(String url, {String apiKey, Client client})
       : this._url = Uri.parse(url),
-        _client = Client();
+        this._apiKey = apiKey,
+        _client = client ?? Client();
 
   final Uri _url;
   final String _apiKey;
   final Client _client;
+
+  Future<Map<String, dynamic>> stats() async {
+    var response = await _client.get('$_url$_statsPath');
+
+    return json.decode(response.body);
+  }
 
   @override
   Future<StreamedResponse> send(BaseRequest request) {
