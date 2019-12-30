@@ -21,20 +21,13 @@ class Blockchair extends BaseClient {
   Duration timeout = const Duration(seconds: 4);
 
   Future<Map<String, dynamic>> stats() async {
-    var response = await _client.get('$_url$_statsPath').timeout(timeout);
-    if (!(response.statusCode >= 200 && response.statusCode < 400)) {
-      throw NotOkStatusCodeException(response.statusCode);
-    }
+    var response = await _get('$_url$_statsPath');
 
     return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> block(blockIdentifier) async {
-    var response =
-        await _client.get('$_url$_blockPath$blockIdentifier').timeout(timeout);
-    if (!(response.statusCode >= 200 && response.statusCode < 400)) {
-      throw NotOkStatusCodeException(response.statusCode);
-    }
+    var response = await _get('$_url$_blockPath$blockIdentifier');
 
     return json.decode(response.body);
   }
