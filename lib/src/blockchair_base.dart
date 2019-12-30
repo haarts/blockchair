@@ -16,9 +16,13 @@ class Blockchair extends BaseClient {
   final String _apiKey;
   final Client _client;
 
+  Duration timeout = Duration(seconds: 4);
+
   Future<Map<String, dynamic>> stats() async {
-    var response = await _client.get('$_url$_statsPath');
-    print(json.decode(response.body).runtimeType);
+    var response = await _client.get('$_url$_statsPath').timeout(timeout);
+    if (!(response.statusCode >= 200 && response.statusCode < 400)) {
+      throw NotOkStatusCodeException(response.statusCode);
+    }
 
     return json.decode(response.body);
   }
@@ -34,4 +38,12 @@ class Blockchair extends BaseClient {
 
   @override
   String toString() => 'Blockchair: url: $_url, apiKey: $_apiKey';
+}
+
+class NotOkStatusCodeException implements Exception {
+  NotOkStatusCodeException(this.statusCode);
+
+  final int statusCode;
+
+  String toString() => 'NotOkStatusCodeException: statusCode = $statusCode';
 }
