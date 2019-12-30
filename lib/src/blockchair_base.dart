@@ -33,6 +33,10 @@ class Blockchair extends BaseClient {
   }
 
   Future<Map<String, dynamic>> blocks(List blockIdentifiers) async {
+    if (blockIdentifiers.length > 10) {
+      throw ClientException('');
+    }
+
     var response = await _get('$_url$_blocksPath${blockIdentifiers.join(',')}');
 
     return json.decode(response.body);

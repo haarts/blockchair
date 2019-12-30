@@ -146,6 +146,11 @@ void main() {
       });
     });
 
+    test('maximize list to 10 items', () async {
+      expect(() => Blockchair('').blocks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+          throwsA(TypeMatcher<ClientException>()));
+    });
+
     group('standard exceptions', () {
       test('throw on timeout', () async {
         client = timingOut();
