@@ -16,7 +16,7 @@ class Blockchair extends BaseClient {
   final String _apiKey;
   final Client _client;
 
-  Duration timeout = Duration(seconds: 4);
+  Duration timeout = const Duration(seconds: 4);
 
   Future<Map<String, dynamic>> stats() async {
     var response = await _client.get('$_url$_statsPath').timeout(timeout);
