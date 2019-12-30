@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:http/http.dart';
 
 class Blockchair extends BaseClient {
-  static const String _statsPath = '/stats';
-
   Blockchair(String url, {String apiKey, Client client})
-      : this._url = Uri.parse(url),
-        this._apiKey = apiKey,
+      : _url = Uri.parse(url),
+        _apiKey = apiKey,
         _client = client ?? Client();
+
+  static const String _statsPath = '/stats';
 
   final Uri _url;
   final String _apiKey;
