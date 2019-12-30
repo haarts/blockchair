@@ -41,7 +41,7 @@ class Blockchair extends BaseClient {
   Future<Response> _get(String url) async {
     var response = await _client.get(url).timeout(timeout);
     if (!(response.statusCode >= 200 && response.statusCode < 400)) {
-      throw NotOkStatusCodeException(response.statusCode);
+      throw NotOkStatusCodeException(url, response.statusCode);
     }
 
 		return response;
@@ -61,9 +61,10 @@ class Blockchair extends BaseClient {
 }
 
 class NotOkStatusCodeException implements Exception {
-  NotOkStatusCodeException(this.statusCode);
+  NotOkStatusCodeException(this.url, this.statusCode);
 
+  final String url;
   final int statusCode;
 
-  String toString() => 'NotOkStatusCodeException: statusCode = $statusCode';
+  String toString() => 'NotOkStatusCodeException: url = $url, statusCode = $statusCode';
 }
