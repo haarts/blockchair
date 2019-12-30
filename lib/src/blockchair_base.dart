@@ -9,6 +9,7 @@ class Blockchair extends BaseClient {
         _apiKey = apiKey,
         _client = client ?? Client();
 
+  static const String version = '0.1.0';
   static const String _statsPath = '/stats';
 
   final Uri _url;
@@ -25,7 +26,7 @@ class Blockchair extends BaseClient {
   @override
   Future<StreamedResponse> send(BaseRequest request) {
     request.headers[HttpHeaders.userAgentHeader] =
-        'Blockchair - Dart (pub.dev/packages/blockchair)';
+        'Blockchair v$version - Dart (https://pub.dev/packages/blockchair)';
     request.headers[HttpHeaders.contentTypeHeader] = 'application/json';
 
     return _client.send(request);
