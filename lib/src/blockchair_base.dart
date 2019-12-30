@@ -141,6 +141,7 @@ class NotOkStatusCodeException implements Exception {
   final Uri url;
   final int statusCode;
 
+  @override
   String toString() =>
       'NotOkStatusCodeException: url = $url, statusCode = $statusCode';
 }
