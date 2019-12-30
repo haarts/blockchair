@@ -21,6 +21,10 @@ class ContainsKey extends Matcher {
 }
 
 void main() {
+  dynamic client;
+
+  tearDown(() => client?.close());
+
   test('toString()', () {
     expect(
       Blockchair('https://some-url.com', apiKey: 'some-key').toString(),
@@ -29,7 +33,7 @@ void main() {
   });
 
   test('timeout property', () {
-    var client = Blockchair('', apiKey: '');
+    client = Blockchair('', apiKey: '');
     expect(client.timeout, Duration(seconds: 4));
 
     client.timeout = Duration(seconds: 10);
@@ -38,7 +42,7 @@ void main() {
 
   group('stats()', () {
     test('happy path', () async {
-      var client = MockClient(
+      client = MockClient(
           (request) async => Response(json.encode({"data": 123}), 200));
       expect(
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
@@ -53,7 +57,7 @@ void main() {
             timeout + Duration(seconds: 1),
             () => Response(json.encode({"data": 123}), 200),
           ));
-      var client =
+      client =
           Blockchair('https://api.blockchair.com/bitcoin', client: inner)
             ..timeout = timeout;
 
@@ -64,8 +68,10 @@ void main() {
     });
 
     test('throw on garbage return', () async {
-      var inner = MockClient((request) async => Response('this is not JSON', 200));
-      var client = Blockchair('https://api.blockchair.com/bitcoin', client: inner);
+      var inner =
+          MockClient((request) async => Response('this is not JSON', 200));
+      client =
+          Blockchair('https://api.blockchair.com/bitcoin', client: inner);
 
       expect(
         () => client.stats(),
@@ -74,13 +80,59 @@ void main() {
     });
 
     test('throw on non 2xx response', () async {
-      var inner = MockClient((request) async => Response('this is not JSON', 401));
-      var client = Blockchair('https://api.blockchair.com/bitcoin', client: inner);
+      var inner =
+          MockClient((request) async => Response('this is not JSON', 401));
+      client =
+          Blockchair('https://api.blockchair.com/bitcoin', client: inner);
 
       expect(
         () => client.stats(),
         throwsA(TypeMatcher<NotOkStatusCodeException>()),
       );
+    });
+  });
+
+  group('block()', () {
+    group('happy path', () {
+      test('with block height', () async {
+        client = MockClient((request) async {
+          expect(request.url.pathSegments.last, '1');
+          return Response(json.encode({"data": 123}), 200);
+        });
+        await Blockchair('https://api.blockchair.com/bitcoin', client: client)
+            .block(1);
+      });
+
+      test('with block hash', () async {
+        client = MockClient((request) async {
+          expect(request.url.pathSegments.last, 'some-hash');
+          return Response(json.encode({"data": 123}), 200);
+        });
+        await Blockchair('https://api.blockchair.com/bitcoin', client: client)
+            .block('some-hash');
+      });
+    });
+  });
+
+  group('blocks()', () {
+    group('happy path', () {
+      test('with block heights', () async {
+        client = MockClient((request) async {
+          expect(request.url.pathSegments.last, '1,2');
+          return Response(json.encode({"data": 123}), 200);
+        });
+        await Blockchair('https://api.blockchair.com/bitcoin', client: client)
+            .blocks([1, 2]);
+      });
+      test('with block hashes', () async {
+        client = MockClient((request) async {
+          expect(request.url.pathSegments.last, 'some-hash,some-other-hash');
+          return Response(json.encode({"data": 123}), 200);
+        });
+
+        await Blockchair('https://api.blockchair.com/bitcoin', client: client)
+            .blocks(['some-hash', 'some-other-hash']);
+      });
     });
   });
 }
