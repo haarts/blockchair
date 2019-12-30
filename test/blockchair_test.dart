@@ -188,6 +188,21 @@ void main() {
 
     await client.statsForKey();
   });
+
+  test('priority()', () async {
+    var inner = MockClient((request) async {
+      expect(request.url.path, '/bitcoin/dashboards/transaction/some-hash/priority');
+      expect(request.url.queryParameters, ContainsKey('key'));
+      return Response('{}', 200);
+    });
+    client = Blockchair(
+      'https://api.blockchair.com/bitcoin/',
+      apiKey: 'some-key',
+      client: inner,
+    );
+
+    await client.priority('some-hash');
+  });
 }
 
 Blockchair timingOut() {
