@@ -13,6 +13,7 @@ class Blockchair extends BaseClient {
   static const String _statsPath = '/stats';
   static const String _blockPath = '/dashboards/block/';
   static const String _blocksPath = '/dashboards/blocks/';
+  static const String _statsForKeyPath = '/premium/stats';
 
   final Uri _url;
   final String _apiKey;
@@ -22,6 +23,12 @@ class Blockchair extends BaseClient {
 
   Future<Map<String, dynamic>> stats() async {
     var response = await _get('$_url$_statsPath');
+
+    return json.decode(response.body);
+  }
+
+  Future<Map<String, dynamic>> statsForKey() async {
+    var response = await _get(_url.replace(path: _statsForKeyPath, queryParameters: {'key': _apiKey}).toString());
 
     return json.decode(response.body);
   }

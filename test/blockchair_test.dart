@@ -174,6 +174,20 @@ void main() {
       });
     });
   });
+
+  test('statsForKey()', () async {
+    client = Blockchair(
+      '',
+      apiKey: 'some-key',
+      client: MockClient((request) async {
+        expect(request.url.path, matches('premium'));
+        expect(request.url.queryParameters, ContainsKey('key'));
+        return Response('{}', 200);
+      }),
+    );
+
+    await client.statsForKey();
+  });
 }
 
 Blockchair timingOut() {
