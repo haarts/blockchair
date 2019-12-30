@@ -3,6 +3,11 @@ import 'dart:io';
 
 import 'package:http/http.dart';
 
+/// A client to interface with the Blockchair API. When using this client note
+/// that three exceptions are to be catched:
+/// - TimeoutException
+/// - NotOkStatusCodeException
+/// - FormatException
 class Blockchair extends BaseClient {
   Blockchair(String url, {String apiKey, Client client})
       : _url = Uri.parse(url),
@@ -24,20 +29,24 @@ class Blockchair extends BaseClient {
   final String _apiKey;
   final Client _client;
 
+  /// Timeout a request after this many seconds.
   Duration timeout = const Duration(seconds: 4);
 
+  /// Returns a Map with some basic data about the chain.
   Future<Map<String, dynamic>> stats() async {
     var response = await _get(_url.replace(path: '$_coin$_statsPath'));
 
     return json.decode(response.body);
   }
 
+  /// Returns data about the configured api key.
   Future<Map<String, dynamic>> statsForKey() async {
     var response = await _get(_url.replace(path: _statsForKeyPath));
 
     return json.decode(response.body);
   }
 
+  /// Returns the priority of a certain transaction in the mempool.
   Future<Map<String, dynamic>> priority(String txHash) async {
     var response = await _get(_url.replace(
         path:
@@ -46,6 +55,7 @@ class Blockchair extends BaseClient {
     return json.decode(response.body);
   }
 
+  /// Returns information on a specific transaction.
   Future<Map<String, dynamic>> transaction(String txHash) async {
     var response =
         await _get(_url.replace(path: '$_coin$_transactionPath$txHash'));
@@ -53,6 +63,9 @@ class Blockchair extends BaseClient {
     return json.decode(response.body);
   }
 
+  /// Returns information on a set of maximum 10 transactions. Note that this
+  /// call is significantly cheaper in API credits than 10 seperate
+  /// `transaction` calls.
   Future<Map<String, dynamic>> transactions(List<String> txHashes) async {
     if (txHashes.length > 10) {
       throw ClientException(
@@ -65,6 +78,7 @@ class Blockchair extends BaseClient {
     return json.decode(response.body);
   }
 
+  // Returns data on a specific block.
   Future<Map<String, dynamic>> block(blockIdentifier) async {
     var response =
         await _get(_url.replace(path: '$_coin$_blockPath$blockIdentifier'));
@@ -72,6 +86,9 @@ class Blockchair extends BaseClient {
     return json.decode(response.body);
   }
 
+  /// Returns information on a set of maximum 10 blocks. Note that this
+  /// call is significantly cheaper in API credits than 10 seperate
+  /// `block` calls.
   Future<Map<String, dynamic>> blocks(List blockIdentifiers) async {
     if (blockIdentifiers.length > 10) {
       throw ClientException(
