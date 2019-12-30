@@ -51,44 +51,33 @@ void main() {
       );
     });
 
-    test('throw on timeout', () async {
-      var timeout = Duration(milliseconds: 1);
-      var inner = MockClient((request) async => Future.delayed(
-            timeout + Duration(seconds: 1),
-            () => Response(json.encode({"data": 123}), 200),
-          ));
-      client =
-          Blockchair('https://api.blockchair.com/bitcoin', client: inner)
-            ..timeout = timeout;
+    group('standard exceptions', () {
+      test('throw on timeout', () async {
+        client = timingOut();
 
-      expect(
-        () => client.stats(),
-        throwsA(TypeMatcher<TimeoutException>()),
-      );
-    });
+        expect(
+          () => client.stats(),
+          throwsA(TypeMatcher<TimeoutException>()),
+        );
+      });
 
-    test('throw on garbage return', () async {
-      var inner =
-          MockClient((request) async => Response('this is not JSON', 200));
-      client =
-          Blockchair('https://api.blockchair.com/bitcoin', client: inner);
+      test('throw on garbage return', () async {
+        client = garbageReturn();
 
-      expect(
-        () => client.stats(),
-        throwsA(TypeMatcher<FormatException>()),
-      );
-    });
+        expect(
+          () => client.stats(),
+          throwsA(TypeMatcher<FormatException>()),
+        );
+      });
 
-    test('throw on non 2xx response', () async {
-      var inner =
-          MockClient((request) async => Response('this is not JSON', 401));
-      client =
-          Blockchair('https://api.blockchair.com/bitcoin', client: inner);
+      test('throw on non 2xx response', () async {
+        client = notOk();
 
-      expect(
-        () => client.stats(),
-        throwsA(TypeMatcher<NotOkStatusCodeException>()),
-      );
+        expect(
+          () => client.stats(),
+          throwsA(TypeMatcher<NotOkStatusCodeException>()),
+        );
+      });
     });
   });
 
@@ -112,6 +101,27 @@ void main() {
             .block('some-hash');
       });
     });
+
+    group('standard exceptions', () {
+      test('throw on timeout', () async {
+        client = timingOut();
+
+        expect(() => client.block(1), throwsA(TypeMatcher<TimeoutException>()));
+      });
+
+      test('throw on garbage return', () async {
+        client = garbageReturn();
+
+        expect(() => client.block(1), throwsA(TypeMatcher<FormatException>()));
+      });
+
+      test('throw on non 2xx response', () async {
+        client = notOk();
+
+        expect(() => client.block(1),
+            throwsA(TypeMatcher<NotOkStatusCodeException>()));
+      });
+    });
   });
 
   group('blocks()', () {
@@ -124,6 +134,7 @@ void main() {
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
             .blocks([1, 2]);
       });
+
       test('with block hashes', () async {
         client = MockClient((request) async {
           expect(request.url.pathSegments.last, 'some-hash,some-other-hash');
@@ -134,5 +145,47 @@ void main() {
             .blocks(['some-hash', 'some-other-hash']);
       });
     });
+
+    group('standard exceptions', () {
+      test('throw on timeout', () async {
+        client = timingOut();
+
+        expect(
+            () => client.blocks([]), throwsA(TypeMatcher<TimeoutException>()));
+      });
+
+      test('throw on garbage return', () async {
+        client = garbageReturn();
+
+        expect(
+            () => client.blocks([]), throwsA(TypeMatcher<FormatException>()));
+      });
+
+      test('throw on non 2xx response', () async {
+        client = notOk();
+
+        expect(() => client.blocks([]),
+            throwsA(TypeMatcher<NotOkStatusCodeException>()));
+      });
+    });
   });
+}
+
+Blockchair timingOut() {
+  var timeout = Duration(milliseconds: 1);
+  var inner = MockClient((request) async => Future.delayed(
+        timeout + Duration(seconds: 1),
+        () => Response(json.encode({"data": 123}), 200),
+      ));
+  return Blockchair('https://some-url.com', client: inner)..timeout = timeout;
+}
+
+Blockchair garbageReturn() {
+  var inner = MockClient((request) async => Response('this is not JSON', 200));
+  return Blockchair('https://some-url.com', client: inner);
+}
+
+Blockchair notOk() {
+  var inner = MockClient((request) async => Response('{}', 401));
+  return Blockchair('https://some-url.com', client: inner);
 }
