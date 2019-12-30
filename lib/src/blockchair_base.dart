@@ -89,6 +89,11 @@ class Blockchair extends BaseClient {
   }
 
   @override
+  void close() {
+    _client.close();
+  }
+
+  @override
   String toString() => 'Blockchair: url: $_url, apiKey: $_apiKey';
 }
 
