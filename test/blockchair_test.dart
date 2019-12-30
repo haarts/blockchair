@@ -8,9 +8,9 @@ import 'package:test/test.dart';
 import 'package:blockchair/blockchair.dart';
 
 class ContainsKey extends Matcher {
-  final Object _key;
-
   const ContainsKey(this._key);
+
+  final Object _key;
 
   @override
   bool matches(item, Map matchState) => item.containsKey(_key);
@@ -191,7 +191,8 @@ void main() {
 
   test('priority()', () async {
     var inner = MockClient((request) async {
-      expect(request.url.path, '/bitcoin/dashboards/transaction/some-hash/priority');
+      expect(request.url.path,
+          '/bitcoin/dashboards/transaction/some-hash/priority');
       expect(request.url.queryParameters, ContainsKey('key'));
       return Response('{}', 200);
     });
@@ -202,6 +203,42 @@ void main() {
     );
 
     await client.priority('some-hash');
+  });
+
+  test('transaction()', () async {
+    var inner = MockClient((request) async {
+      expect(request.url.path, '/bitcoin/dashboards/transaction/some-hash');
+      return Response('{}', 200);
+    });
+    client = Blockchair(
+      'https://api.blockchair.com/bitcoin/',
+      client: inner,
+    );
+
+    await client.transaction('some-hash');
+  });
+
+  group('transactions()', () {
+    test('happy path', () async {
+      var inner = MockClient((request) async {
+        expect(request.url.path,
+            '/bitcoin/dashboards/transactions/some-hash,some-other-hash');
+        return Response('{}', 200);
+      });
+      client = Blockchair(
+        'https://api.blockchair.com/bitcoin/',
+        client: inner,
+      );
+
+      await client.transactions(['some-hash', 'some-other-hash']);
+    });
+
+    test('maximize list to 10 items', () async {
+      expect(
+          () => Blockchair('').transactions(
+              ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']),
+          throwsA(TypeMatcher<ClientException>()));
+    });
   });
 }
 
