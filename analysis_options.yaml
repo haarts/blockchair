@@ -3,6 +3,7 @@ linter:
   rules:
     - always_put_required_named_parameters_first
     - always_require_non_null_named_parameters
+    - annotate_overrides
     - avoid_annotating_with_dynamic
     - avoid_bool_literals_in_conditional_expressions
     - avoid_catching_errors
@@ -39,6 +40,7 @@ linter:
     - library_prefixes
     - no_duplicate_case_values
     - null_closures
+    - omit_local_variable_types
     - only_throw_errors
     - prefer_collection_literals
     - prefer_conditional_assignment
@@ -91,7 +93,3 @@ linter:
     - use_to_and_as_if_applicable
     - valid_regexps
     - void_checks
-
-analyzer:
-  exclude:
-    - scripts/**

@@ -102,6 +102,7 @@ class Blockchair extends BaseClient {
   }
 
   Future<Response> _get(Uri url) async {
+    // ignore: omit_local_variable_types
     Map<String, dynamic> queryParameters = Map.from(url.queryParameters);
     if (_apiKey != null) {
       queryParameters['key'] = _apiKey;
