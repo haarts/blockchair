@@ -1,6 +1,6 @@
 name: blockchair
 description: A simple API client for https://blockchair.com (Bitcoin only).
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/inapay/blockchair
 
 environment:

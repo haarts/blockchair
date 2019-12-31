@@ -15,7 +15,7 @@ class Blockchair extends BaseClient {
         _apiKey = apiKey,
         _client = client ?? Client();
 
-  static const String version = '0.1.0';
+  static const String version = '0.1.1';
   static const String _statsPath = 'stats';
   static const String _blockPath = 'dashboards/block/';
   static const String _blocksPath = 'dashboards/blocks/';
