@@ -23,6 +23,8 @@ class Blockchair extends BaseClient {
   static const String _priorityPath = 'dashboards/transaction/{{}}/priority';
   static const String _transactionPath = 'dashboards/transaction/';
   static const String _transactionsPath = 'dashboards/transactions/';
+  static const String _addressPath = 'dashboards/address/';
+  static const String _addressesPath = 'dashboards/addresses/';
 
   final Uri _url;
   final String _coin;
@@ -72,8 +74,27 @@ class Blockchair extends BaseClient {
           'List argument too long. Is ${txHashes.length}, should be smaller or equal than 10');
     }
 
+    var response = await _get(
+        _url.replace(path: '$_coin$_transactionsPath${txHashes.join(',')}'));
+
+    return json.decode(response.body);
+  }
+
+  Future<Map<String, dynamic>> address(String address) async {
     var response =
-        await _get(_url.replace(path: '$_coin$_transactionsPath${txHashes.join(',')}'));
+        await _get(_url.replace(path: '$_coin$_addressPath$address'));
+
+    return json.decode(response.body);
+  }
+
+  Future<Map<String, dynamic>> addresses(List<String> addresses) async {
+    if (addresses.length > 10) {
+      throw ClientException(
+          'List argument too long. Is ${addresses.length}, should be smaller or equal than 10');
+    }
+
+    var response = await _get(
+        _url.replace(path: '$_coin$_addressesPath${addresses.join(',')}'));
 
     return json.decode(response.body);
   }

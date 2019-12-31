@@ -7,6 +7,29 @@ import 'package:test/test.dart';
 
 import 'package:blockchair/blockchair.dart';
 
+void commonExceptionsFor(
+    String name, void Function(Blockchair client) methodUnderTest) {
+  test('throw on garbage return for $name', () async {
+    var client = garbageReturn();
+
+    expect(
+        () => methodUnderTest(client), throwsA(TypeMatcher<FormatException>()));
+  });
+  test('throw on timeout for $name', () async {
+    var client = timingOut();
+
+    expect(() => methodUnderTest(client),
+        throwsA(TypeMatcher<TimeoutException>()));
+  });
+
+  test('throw on non 2xx response', () async {
+    var client = notOk();
+
+    expect(() => methodUnderTest(client),
+        throwsA(TypeMatcher<NotOkStatusCodeException>()));
+  });
+}
+
 class ContainsKey extends Matcher {
   const ContainsKey(this._key);
 
@@ -51,34 +74,7 @@ void main() {
       );
     });
 
-    group('standard exceptions', () {
-      test('throw on timeout', () async {
-        client = timingOut();
-
-        expect(
-          () => client.stats(),
-          throwsA(TypeMatcher<TimeoutException>()),
-        );
-      });
-
-      test('throw on garbage return', () async {
-        client = garbageReturn();
-
-        expect(
-          () => client.stats(),
-          throwsA(TypeMatcher<FormatException>()),
-        );
-      });
-
-      test('throw on non 2xx response', () async {
-        client = notOk();
-
-        expect(
-          () => client.stats(),
-          throwsA(TypeMatcher<NotOkStatusCodeException>()),
-        );
-      });
-    });
+    commonExceptionsFor('stats()', (client) => client.stats());
   });
 
   group('block()', () {
@@ -102,26 +98,7 @@ void main() {
       });
     });
 
-    group('standard exceptions', () {
-      test('throw on timeout', () async {
-        client = timingOut();
-
-        expect(() => client.block(1), throwsA(TypeMatcher<TimeoutException>()));
-      });
-
-      test('throw on garbage return', () async {
-        client = garbageReturn();
-
-        expect(() => client.block(1), throwsA(TypeMatcher<FormatException>()));
-      });
-
-      test('throw on non 2xx response', () async {
-        client = notOk();
-
-        expect(() => client.block(1),
-            throwsA(TypeMatcher<NotOkStatusCodeException>()));
-      });
-    });
+    commonExceptionsFor('block()', (client) => client.block(1));
   });
 
   group('blocks()', () {
@@ -151,28 +128,7 @@ void main() {
           throwsA(TypeMatcher<ClientException>()));
     });
 
-    group('standard exceptions', () {
-      test('throw on timeout', () async {
-        client = timingOut();
-
-        expect(
-            () => client.blocks([]), throwsA(TypeMatcher<TimeoutException>()));
-      });
-
-      test('throw on garbage return', () async {
-        client = garbageReturn();
-
-        expect(
-            () => client.blocks([]), throwsA(TypeMatcher<FormatException>()));
-      });
-
-      test('throw on non 2xx response', () async {
-        client = notOk();
-
-        expect(() => client.blocks([]),
-            throwsA(TypeMatcher<NotOkStatusCodeException>()));
-      });
-    });
+    commonExceptionsFor('blocks()', (client) => client.blocks([1]));
   });
 
   test('statsForKey()', () async {
@@ -189,33 +145,42 @@ void main() {
     await client.statsForKey();
   });
 
-  test('priority()', () async {
-    var inner = MockClient((request) async {
-      expect(request.url.path,
-          '/bitcoin/dashboards/transaction/some-hash/priority');
-      expect(request.url.queryParameters, ContainsKey('key'));
-      return Response('{}', 200);
-    });
-    client = Blockchair(
-      'https://api.blockchair.com/bitcoin/',
-      apiKey: 'some-key',
-      client: inner,
-    );
+  group('priority()', () {
+    test('happy path', () async {
+      var inner = MockClient((request) async {
+        expect(request.url.path,
+            '/bitcoin/dashboards/transaction/some-hash/priority');
+        expect(request.url.queryParameters, ContainsKey('key'));
+        return Response('{}', 200);
+      });
+      client = Blockchair(
+        'https://api.blockchair.com/bitcoin/',
+        apiKey: 'some-key',
+        client: inner,
+      );
 
-    await client.priority('some-hash');
+      await client.priority('some-hash');
+    });
+
+    commonExceptionsFor('priority()', (client) => client.priority('some-hash'));
   });
 
-  test('transaction()', () async {
-    var inner = MockClient((request) async {
-      expect(request.url.path, '/bitcoin/dashboards/transaction/some-hash');
-      return Response('{}', 200);
-    });
-    client = Blockchair(
-      'https://api.blockchair.com/bitcoin/',
-      client: inner,
-    );
+  group('transaction()', () {
+    test('happy path', () async {
+      var inner = MockClient((request) async {
+        expect(request.url.path, '/bitcoin/dashboards/transaction/some-hash');
+        return Response('{}', 200);
+      });
+      client = Blockchair(
+        'https://api.blockchair.com/bitcoin/',
+        client: inner,
+      );
 
-    await client.transaction('some-hash');
+      await client.transaction('some-hash');
+    });
+
+    commonExceptionsFor(
+        'transaction()', (client) => client.transaction('some-tx'));
   });
 
   group('transactions()', () {
@@ -236,6 +201,53 @@ void main() {
     test('maximize list to 10 items', () async {
       expect(
           () => Blockchair('').transactions(
+              ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']),
+          throwsA(TypeMatcher<ClientException>()));
+    });
+
+    commonExceptionsFor(
+        'transactions()', (client) => client.transactions(['some-tx']));
+  });
+
+  group('address()', () {
+    test('happy path', () async {
+      var inner = MockClient((request) async {
+        expect(request.url.path, '/bitcoin/dashboards/address/some-address');
+        return Response('{}', 200);
+      });
+      client = Blockchair(
+        'https://api.blockchair.com/bitcoin/',
+        client: inner,
+      );
+
+      await client.address('some-address');
+    });
+
+    commonExceptionsFor(
+        'address()', (client) => client.address('some-address'));
+  });
+
+  group('addresses()', () {
+    test('happy path', () async {
+      var inner = MockClient((request) async {
+        expect(request.url.path,
+            '/bitcoin/dashboards/addresses/some-address,some-other-address');
+        return Response('{}', 200);
+      });
+      client = Blockchair(
+        'https://api.blockchair.com/bitcoin/',
+        client: inner,
+      );
+
+      await client.addresses(['some-address', 'some-other-address']);
+    });
+
+    commonExceptionsFor('addresses()',
+        (client) => client.addresses(['some-address', 'some-other-address']));
+
+    test('maximize list to 10 items', () async {
+      expect(
+          () => Blockchair('').addresses(
               ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']),
           throwsA(TypeMatcher<ClientException>()));
     });
