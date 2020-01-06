@@ -1,6 +1,7 @@
 # Blockbook library
 
 [![pub package](https://img.shields.io/pub/v/blockchair.svg)](https://pub.dev/packages/blockchair)
+[![CircleCI](https://circleci.com/gh/inapay/blockchair.svg?style=svg)](https://circleci.com/gh/inapay/blockchair)
 
 A library for communicating with the [Blockchair API]. Some calls are missing.
 
