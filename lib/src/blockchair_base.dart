@@ -1,19 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 /// A client to interface with the Blockchair API. When using this client note
 /// that three exceptions are to be catched:
 /// - TimeoutException
 /// - NotOkStatusCodeException
 /// - FormatException
-class Blockchair extends BaseClient {
-  Blockchair(String url, {String apiKey, Client client})
+class Blockchair extends http.BaseClient {
+  Blockchair(String url, {String apiKey, http.Client client})
       : _url = Uri.parse(url),
         _coin = Uri.parse(url).path,
         _apiKey = apiKey,
-        _client = client ?? Client();
+        _client = client ?? http.Client();
 
   static const String version = '0.1.1';
   static const String _statsPath = 'stats';
@@ -29,7 +29,7 @@ class Blockchair extends BaseClient {
   final Uri _url;
   final String _coin;
   final String _apiKey;
-  final Client _client;
+  final http.Client _client;
 
   /// Timeout a request after this many seconds.
   Duration timeout = const Duration(seconds: 4);
@@ -70,7 +70,7 @@ class Blockchair extends BaseClient {
   /// `transaction` calls.
   Future<Map<String, dynamic>> transactions(List<String> txHashes) async {
     if (txHashes.length > 10) {
-      throw ClientException(
+      throw http.ClientException(
           'List argument too long. Is ${txHashes.length}, should be smaller or equal than 10');
     }
 
@@ -89,7 +89,7 @@ class Blockchair extends BaseClient {
 
   Future<Map<String, dynamic>> addresses(List<String> addresses) async {
     if (addresses.length > 10) {
-      throw ClientException(
+      throw http.ClientException(
           'List argument too long. Is ${addresses.length}, should be smaller or equal than 10');
     }
 
@@ -112,7 +112,7 @@ class Blockchair extends BaseClient {
   /// `block` calls.
   Future<Map<String, dynamic>> blocks(List blockIdentifiers) async {
     if (blockIdentifiers.length > 10) {
-      throw ClientException(
+      throw http.ClientException(
           'List argument too long. Is ${blockIdentifiers.length}, should be smaller or equal than 10');
     }
 
@@ -122,15 +122,14 @@ class Blockchair extends BaseClient {
     return json.decode(response.body);
   }
 
-  Future<Response> _get(Uri url) async {
+  Future<http.Response> _get(Uri url) async {
     // ignore: omit_local_variable_types
     Map<String, dynamic> queryParameters = Map.from(url.queryParameters);
     if (_apiKey != null) {
       queryParameters['key'] = _apiKey;
     }
 
-    var response = await _client
-        .get(url.replace(queryParameters: queryParameters))
+    var response = await get(url.replace(queryParameters: queryParameters))
         .timeout(timeout);
     if (!(response.statusCode >= 200 && response.statusCode < 400)) {
       throw NotOkStatusCodeException(url, response.statusCode);
@@ -140,7 +139,7 @@ class Blockchair extends BaseClient {
   }
 
   @override
-  Future<StreamedResponse> send(BaseRequest request) {
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
     request.headers[HttpHeaders.userAgentHeader] =
         'Blockchair v$version - Dart (https://pub.dev/packages/blockchair)';
     request.headers[HttpHeaders.contentTypeHeader] = 'application/json';
