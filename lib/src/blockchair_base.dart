@@ -129,8 +129,15 @@ class Blockchair extends http.BaseClient {
       queryParameters['key'] = _apiKey;
     }
 
-    var response = await get(url.replace(queryParameters: queryParameters))
-        .timeout(timeout);
+    /// It would seem that replacing an empty queryParameters is a noop. It is
+    /// not. It adds a '?' to the URL. Not that bad but the Blockchair API
+    /// gives us grieve by returning a weird, stale stats object (for example).
+    /// Perhaps the API interprets this as an empty API key?
+    if (queryParameters.isNotEmpty) {
+      url = url.replace(queryParameters: queryParameters);
+    }
+
+    var response = await get(url).timeout(timeout);
     if (!(response.statusCode >= 200 && response.statusCode < 400)) {
       throw NotOkStatusCodeException(url, response.statusCode);
     }
