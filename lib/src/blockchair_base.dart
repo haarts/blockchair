@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 
 /// A client to interface with the Blockchair API. When using this client note
 /// that three exceptions are to be catched:
@@ -36,7 +37,7 @@ class Blockchair extends http.BaseClient {
 
   /// Returns a Map with some basic data about the chain.
   Future<Map<String, dynamic>> stats() async {
-    var response = await _get(_url.replace(path: '$_coin$_statsPath'));
+    var response = await _get(_url.replace(path: join(_coin, _statsPath)));
 
     return json.decode(response.body);
   }
@@ -51,16 +52,22 @@ class Blockchair extends http.BaseClient {
   /// Returns the priority of a certain transaction in the mempool.
   Future<Map<String, dynamic>> priority(String txHash) async {
     var response = await _get(_url.replace(
-        path:
-            '$_coin${_priorityPath.replaceFirst(RegExp('\{\{\}\}'), txHash)}'));
+        path: join(
+      _coin,
+      _priorityPath.replaceFirst(RegExp('\{\{\}\}'), txHash),
+    )));
 
     return json.decode(response.body);
   }
 
   /// Returns information on a specific transaction.
   Future<Map<String, dynamic>> transaction(String txHash) async {
-    var response =
-        await _get(_url.replace(path: '$_coin$_transactionPath$txHash'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _transactionPath,
+      txHash,
+    )));
 
     return json.decode(response.body);
   }
@@ -74,15 +81,23 @@ class Blockchair extends http.BaseClient {
           'List argument too long. Is ${txHashes.length}, should be smaller or equal than 10');
     }
 
-    var response = await _get(
-        _url.replace(path: '$_coin$_transactionsPath${txHashes.join(',')}'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _transactionsPath,
+      txHashes.join(','),
+    )));
 
     return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> address(String address) async {
-    var response =
-        await _get(_url.replace(path: '$_coin$_addressPath$address'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _addressPath,
+      address,
+    )));
 
     return json.decode(response.body);
   }
@@ -93,16 +108,24 @@ class Blockchair extends http.BaseClient {
           'List argument too long. Is ${addresses.length}, should be smaller or equal than 10');
     }
 
-    var response = await _get(
-        _url.replace(path: '$_coin$_addressesPath${addresses.join(',')}'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _addressesPath,
+      addresses.join(','),
+    )));
 
     return json.decode(response.body);
   }
 
   // Returns data on a specific block.
   Future<Map<String, dynamic>> block(blockIdentifier) async {
-    var response =
-        await _get(_url.replace(path: '$_coin$_blockPath$blockIdentifier'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _blockPath,
+      blockIdentifier.toString(),
+    )));
 
     return json.decode(response.body);
   }
@@ -116,8 +139,12 @@ class Blockchair extends http.BaseClient {
           'List argument too long. Is ${blockIdentifiers.length}, should be smaller or equal than 10');
     }
 
-    var response = await _get(
-        _url.replace(path: '$_coin$_blocksPath${blockIdentifiers.join(',')}'));
+    var response = await _get(_url.replace(
+        path: join(
+      _coin,
+      _blocksPath,
+      blockIdentifiers.join(','),
+    )));
 
     return json.decode(response.body);
   }
