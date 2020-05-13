@@ -66,7 +66,7 @@ void main() {
   group('stats()', () {
     test('happy path', () async {
       client = MockClient(
-          (request) async => Response(json.encode({"data": 123}), 200));
+          (request) async => Response(json.encode({'data': 123}), 200));
       expect(
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
             .stats(),
@@ -82,7 +82,7 @@ void main() {
       test('with block height', () async {
         client = MockClient((request) async {
           expect(request.url.pathSegments.last, '1');
-          return Response(json.encode({"data": 123}), 200);
+          return Response(json.encode({'data': 123}), 200);
         });
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
             .block(1);
@@ -91,7 +91,7 @@ void main() {
       test('with block hash', () async {
         client = MockClient((request) async {
           expect(request.url.pathSegments.last, 'some-hash');
-          return Response(json.encode({"data": 123}), 200);
+          return Response(json.encode({'data': 123}), 200);
         });
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
             .block('some-hash');
@@ -106,7 +106,7 @@ void main() {
       test('with block heights', () async {
         client = MockClient((request) async {
           expect(request.url.pathSegments.last, '1,2');
-          return Response(json.encode({"data": 123}), 200);
+          return Response(json.encode({'data': 123}), 200);
         });
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
             .blocks([1, 2]);
@@ -115,7 +115,7 @@ void main() {
       test('with block hashes', () async {
         client = MockClient((request) async {
           expect(request.url.pathSegments.last, 'some-hash,some-other-hash');
-          return Response(json.encode({"data": 123}), 200);
+          return Response(json.encode({'data': 123}), 200);
         });
 
         await Blockchair('https://api.blockchair.com/bitcoin', client: client)
@@ -258,7 +258,7 @@ Blockchair timingOut() {
   var timeout = Duration(milliseconds: 1);
   var inner = MockClient((request) async => Future.delayed(
         timeout + Duration(seconds: 1),
-        () => Response(json.encode({"data": 123}), 200),
+        () => Response(json.encode({'data': 123}), 200),
       ));
   return Blockchair('https://some-url.com', client: inner)..timeout = timeout;
 }
